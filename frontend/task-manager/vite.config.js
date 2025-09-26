@@ -4,8 +4,6 @@ import tailwindcss from '@tailwindcss/vite'
 
 const postcssThemePlugin = require('./postcss-theme-plugin.cjs')
 
-
-
 // https://vite.dev/config/
 export default defineConfig({
   css: {
@@ -14,4 +12,7 @@ export default defineConfig({
     },
   },
   plugins: [react(), tailwindcss()],
-})
+  preview: {
+    allowedHosts: ['todo-list-3-ad04.onrender.com'],
+  },
+});

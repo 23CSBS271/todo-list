@@ -1,8 +1,0 @@
-- [ ] Edit SignUp.jsx: Remove adminInviteToken field, state, and from API request; change redirect to always /admin/dashboard
-- [ ] Edit login.jsx: Change redirect to always /admin/dashboard
-- [ ] Check and edit backend authController.js for signup without token
-- [ ] Read and edit routing files (App.jsx, PrivateRoute.jsx) to allow all users to admin dashboard
-- [ ] Search and replace "Task Manager" strings with "Listify" in files
-- [ ] Rename frontend/task-manager to frontend/listify and fix imports
-- [ ] Update package.json, index.html, README.md names
-- [ ] Test the changes

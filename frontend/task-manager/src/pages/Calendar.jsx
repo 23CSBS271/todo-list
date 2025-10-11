@@ -10,6 +10,10 @@ import { useUserAuth } from '../../hooks/useUserAuth.jsx';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import axiosInstance from '../../utils/axiosinstance';
 import { API_PATHS } from '../../utils/apiPaths';
+import Modal from '../../components/Modal';
+import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { UserContext } from '../../context/userContext';
 
 const localizer = dateFnsLocalizer({
   format,
@@ -24,7 +28,12 @@ const localizer = dateFnsLocalizer({
 const CalendarPage = () => {
   useUserAuth();
 
+  const navigate = useNavigate();
+  const { user } = useContext(UserContext);
+
   const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchEvents = async (start, end) => {
     try {
@@ -61,6 +70,17 @@ const CalendarPage = () => {
     }
   };
 
+  const handleSelectEvent = (event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleSelectSlot = (slotInfo) => {
+    if (user && user.role === 'admin') {
+      navigate('/admin/create-task');
+    }
+  };
+
   return (
     <DashboardLayout activeMenu="calendar">
       <div className='card my-5'>
@@ -72,8 +92,45 @@ const CalendarPage = () => {
           endAccessor="end"
           style={{ height: 500 }}
           onRangeChange={handleRangeChange}
+          onSelectEvent={handleSelectEvent}
+          onSelectSlot={handleSelectSlot}
+          selectable
         />
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={selectedEvent ? selectedEvent.title : ''}
+      >
+        {selectedEvent && (
+          <div className="space-y-4">
+            <p><strong>Date:</strong> {selectedEvent.start.toLocaleDateString()}</p>
+            {(selectedEvent.resource.type === 'task' || selectedEvent.resource.type === 'task-reminder') ? (
+              <div>
+                <p><strong>Status:</strong> {selectedEvent.resource.status}</p>
+                <p><strong>Priority:</strong> {selectedEvent.resource.priority}</p>
+                <p><strong>Board:</strong> {selectedEvent.resource.board}</p>
+                <p><strong>Assigned To:</strong> {selectedEvent.resource.assignedTo}</p>
+                <button
+                  className="btn-primary mt-4"
+                  onClick={() => {
+                    navigate(`/user/task-details/${selectedEvent.resource.id}`);
+                    setIsModalOpen(false);
+                  }}
+                >
+                  View Task Details
+                </button>
+              </div>
+            ) : (
+              <div>
+                <p><strong>Type:</strong> {selectedEvent.resource.reminderType}</p>
+                <p><strong>Task:</strong> {selectedEvent.resource.task}</p>
+                <p><strong>User:</strong> {selectedEvent.resource.user}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </DashboardLayout>
   );
 };

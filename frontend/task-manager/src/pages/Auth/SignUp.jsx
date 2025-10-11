@@ -29,6 +29,11 @@ const SignUp = () => {
             setError("Please enter your name.");
             return;
         }
+        // New validation: name must contain only letters and spaces (no numbers)
+        if (!/^[A-Za-z ]+$/.test(fullname)) {
+            setError("Name can only contain letters and spaces.");
+            return;
+        }
         if (!validateEmail(email)) {
             setError("Please enter a valid email address.");
             return;

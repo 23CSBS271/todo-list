@@ -1,6 +1,7 @@
 const User=require('../models/User');
 const bcrypt=require('bcryptjs');
 const jwt=require('jsonwebtoken');
+const Joi = require('joi');
 
 //Generate JWT Token
 const generateToken=(userId)=>{
@@ -8,21 +9,45 @@ const generateToken=(userId)=>{
         expiresIn:'7d'});
 };
 
+// Joi schemas
+const registerSchema = Joi.object({
+  name: Joi.string().pattern(/^[A-Za-z ]+$/).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required(),
+  profileImageUrl: Joi.string().optional(),
+  adminInviteToken: Joi.string().optional()
+});
+
+const loginSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().required()
+});
+
 //@desc Register a new user
 //@route POST /api/auth/register
 //@access Public
 const registerUser=async(req,res)=>{
     try{
-        const {name,email,password,profileImageUrl}=
+        const {name,email,password,profileImageUrl,adminInviteToken}=
         req.body;
+
+        // Validate input
+        const { error } = registerSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+        }
+
         //check if user already exists
         const userExists=await User.findOne({email});
         if(userExists){
             return res.status(400).json({message:'User already exists'});
         }   
 
-        //default role to member
-        let role='member';
+        //role: admin via invite token else user
+        let role='user';
+        if(adminInviteToken && adminInviteToken===process.env.ADMIN_INVITE_TOKEN){
+            role='admin';
+        }
 
         //hash password
         const salt=await bcrypt.genSalt(10);
@@ -58,6 +83,12 @@ const registerUser=async(req,res)=>{
 const loginUser=async(req,res)=>{
     try{
         const {email,password}=req.body;
+
+        // Validate input
+        const { error } = loginSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+        }
 
         const user=await User.findOne({email});
         if (!user) {

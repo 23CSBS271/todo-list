@@ -37,4 +37,18 @@ export const API_PATHS = {
   IMAGE: {
     UPLOAD_IMAGE: "/api/auth/upload-image",
   },
+
+  CALENDAR: {
+    GET_EVENTS: "/api/calendar/events",
+  },
+
+  BOARDS: {
+    GET_ALL_BOARDS: "/api/boards",
+    GET_BOARD_BY_ID: (boardId) => `/api/boards/${boardId}`,
+    CREATE_BOARD: "/api/boards",
+    UPDATE_BOARD: (boardId) => `/api/boards/${boardId}`,
+    DELETE_BOARD: (boardId) => `/api/boards/${boardId}`,
+    ADD_MEMBER: (boardId) => `/api/boards/${boardId}/add-member`,
+    REMOVE_MEMBER: (boardId) => `/api/boards/${boardId}/remove-member`,
+  },
 };

@@ -14,6 +14,7 @@ const ManageTasks= () => {
 
     const[tabs, setTabs] = useState([]);
     const [filterStatus, setFilterStatus] = useState("All");
+    const [dateRange, setDateRange] = useState("");
 
     const navigate = useNavigate();
 
@@ -22,6 +23,7 @@ const ManageTasks= () => {
             const response= await axiosInstance.get(API_PATHS.TASKS.GET_ALL_TASKS,{
                 params: {
                     status:filterStatus === "All" ? "" :filterStatus,
+                    dateRange: dateRange || undefined,
                 },
             });
 

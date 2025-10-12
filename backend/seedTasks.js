@@ -38,8 +38,7 @@ async function seedTasks() {
         const dueDate = new Date();
         dueDate.setDate(dueDate.getDate() + Math.floor(Math.random() * 30) + 1); // 1-30 days from now
 
-        const reminderDate = new Date(dueDate);
-        reminderDate.setHours(reminderDate.getHours() - Math.floor(Math.random() * 24) + 1); // 1-24 hours before due
+        const reminderDate = new Date(dueDate.getTime() - (Math.floor(Math.random() * 24) + 1) * 60 * 60 * 1000); // 1-24 hours before due
 
         const statusIndex = Math.floor(Math.random() * statuses.length);
         const status = statuses[statusIndex];

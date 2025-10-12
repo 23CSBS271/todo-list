@@ -48,6 +48,10 @@ const KanbanBoard = () => {
   const [board, setBoard] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [columns, setColumns] = useState(['To Do', 'In Progress', 'Done']);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedPriority, setSelectedPriority] = useState('');
+  const [timeFilter, setTimeFilter] = useState('all');
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -112,8 +116,32 @@ const KanbanBoard = () => {
     }
   };
 
+  const filteredTasks = tasks.filter(task => {
+    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) || task.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === '' || task.category === selectedCategory;
+    const matchesPriority = selectedPriority === '' || task.priority === selectedPriority;
+    const now = new Date();
+    let matchesTime = true;
+    if (timeFilter === 'daily') {
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      matchesTime = new Date(task.dueDate) >= today && new Date(task.dueDate) < tomorrow;
+    } else if (timeFilter === 'weekly') {
+      const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(endOfWeek.getDate() + 7);
+      matchesTime = new Date(task.dueDate) >= startOfWeek && new Date(task.dueDate) < endOfWeek;
+    } else if (timeFilter === 'monthly') {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      matchesTime = new Date(task.dueDate) >= startOfMonth && new Date(task.dueDate) < endOfMonth;
+    }
+    return matchesSearch && matchesCategory && matchesPriority && matchesTime;
+  });
+
   const getTasksByColumn = (column) => {
-    return tasks.filter(task => task.column === column);
+    return filteredTasks.filter(task => task.column === column);
   };
 
   if (!board) {
@@ -123,6 +151,44 @@ const KanbanBoard = () => {
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">{board.name}</h2>
+      <div className="mb-4 flex flex-wrap gap-4">
+        <input
+          type="text"
+          placeholder="Search tasks..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border p-2 rounded"
+        />
+        <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="border p-2 rounded">
+          <option value="">All Categories</option>
+          <option value="Work">Work</option>
+          <option value="Personal">Personal</option>
+          <option value="Other">Other</option>
+        </select>
+        <select value={selectedPriority} onChange={(e) => setSelectedPriority(e.target.value)} className="border p-2 rounded">
+          <option value="">All Priorities</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+        <div className="flex gap-2">
+          <button onClick={() => setTimeFilter('all')} className={`p-2 rounded ${timeFilter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>All</button>
+          <button onClick={() => setTimeFilter('daily')} className={`p-2 rounded ${timeFilter === 'daily' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Daily</button>
+          <button onClick={() => setTimeFilter('weekly')} className={`p-2 rounded ${timeFilter === 'weekly' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Weekly</button>
+          <button onClick={() => setTimeFilter('monthly')} className={`p-2 rounded ${timeFilter === 'monthly' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Monthly</button>
+        </div>
+      </div>
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold">Reminders</h3>
+        <div className="space-y-2">
+          {filteredTasks.filter(task => task.reminderDate && new Date(task.reminderDate) <= new Date()).map(task => (
+            <div key={task._id} className="card p-3 bg-yellow-100">
+              <h4 className="font-medium">{task.title}</h4>
+              <p className="text-sm">Reminder: {new Date(task.reminderDate).toLocaleString()}</p>
+            </div>
+          ))}
+        </div>
+      </div>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

@@ -35,7 +35,7 @@ const UserDashboard = () => {
         const taskPriorityLevels=data?.taskPriorityLevels || null;
 
   const taskDistributionData = [
-    { status: "Pending", count: taskDistribution?.Pending || 0 },
+    { status: "Pending", count: taskDistribution?.pending || 0 },
     { status: "In Progress", count: taskDistribution?.InProgress || 0 },
     { status: "Completed", count: taskDistribution?.Completed || 0 },
   ];
@@ -65,7 +65,7 @@ const UserDashboard = () => {
        
 
     const onSeeMore =() =>{
-        navigate('/admin/tasks')
+        navigate('/user/tasks')
     }
      useEffect(() => {
       getDashboardData();
@@ -95,7 +95,7 @@ const UserDashboard = () => {
                  <InfoCard
                 label="Pending Tasks"
                 value={addThousandsSeparator(
-                    dashboardData?.charts?.taskDistribution?.Pending ||0
+                    dashboardData?.charts?.taskDistribution?.pending ||0
                 )}
                 color="bg-violet-500"
                 />
